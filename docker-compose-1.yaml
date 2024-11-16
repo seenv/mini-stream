@@ -1,0 +1,135 @@
+# Each mini app service has one seperate image.
+# the image size: daq,dist : 2.4GB | sirt : 1.78GB
+# image files are the same as aps-mini-app docker files
+# starting version 1
+
+version: '3.8'
+
+services:
+  producer:
+    image: seenv/scistream-docker:host-latest
+    container_name: producer
+    privileged: true
+    networks:
+      producer_network:
+        ipv4_address: 192.168.100.10
+    volumes:
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["/prod.sh"]
+
+#--------------------------------------
+
+  streamer-daq:
+    image: seenv/ministream:daq-latest
+    depends_on:
+      - producer
+    network_mode: "service:producer" 
+    #ports:
+      #- "50000-50001:50000-50001"
+    command: >
+      sh -c "sleep 30 && python /aps-mini-apps/build/python/streamer-daq/DAQStream.py --mode 1 --simulation_file /aps-mini-apps/data/tomo_00058_all_subsampled1p_s1079s1081.h5 --d_iteration 1 --publisher_addr tcp://*:50000 --iteration_sleep 1 --synch_addr tcp://*:50001 --synch_count 1"
+    #command: ["tail", "-f", "/dev/null"]
+
+  streamer-dist:
+    image: seenv/ministream:dist-latest
+    depends_on:
+      - streamer-daq
+    network_mode: "service:producer"
+    #ports:
+      #- 50010:50010
+    command: >
+      sh -c "sleep 35 && python /aps-mini-apps/build/python/streamer-dist/ModDistStreamPubDemo.py --data_source_addr tcp://192.168.100.10:50000 --data_source_synch_addr tcp://192.168.100.10:50001 --cast_to_float32 --normalize --my_distributor_addr tcp://*:5074 --beg_sinogram 1000 --num_sinograms 2 --num_columns 2560"
+    #command: ["tail", "-f", "/dev/null"]
+
+#--------------------------------------
+
+  p2cs:
+    #build:
+      #context: ./needs
+      #dockerfile: Dockerfile.prods
+    image: seenv/scistream-docker:s2cs-latest
+    container_name: p2cs
+    privileged: true
+    depends_on:
+      - producer
+    networks:
+      producer_network:
+        ipv4_address: 192.168.100.11
+      s2cs_network:
+        ipv4_address: 192.168.101.10
+    volumes:
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["/prods.sh"]
+
+
+  c2cs:
+    #build:
+      #context: ./needs
+      #dockerfile: Dockerfile.conss
+    image: seenv/scistream-docker:s2cs-latest
+    container_name: c2cs
+    privileged: true
+    depends_on:
+      - p2cs
+    networks:
+      s2cs_network:
+        ipv4_address: 192.168.101.11
+      consumer_network:
+        ipv4_address: 192.168.102.10
+    volumes:
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["/conss.sh"]
+
+  consumer:
+    #build:
+      #context: ./needs
+      #dockerfile: Dockerfile.cons
+    image: seenv/scistream-docker:host-latest
+    container_name: consumer
+    privileged: true
+    depends_on:
+      - c2cs
+    networks:
+      consumer_network:
+        ipv4_address: 192.168.102.11
+    volumes:
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["/cons.sh"]
+
+#--------------------------------------
+
+  streamer-sirt:
+    image: seenv/ministream:dist-latest
+    depends_on:
+      - consumer
+    network_mode: "service:consumer"
+    volumes:
+        - /tmp:/mnt/output
+    command: >
+      sh -c "sleep 40 && /aps-mini-apps/build/bin/sirt_stream --write-freq 4 --dest-host 192.168.102.10 --dest-port 5074 --window-iter 1 --window-step 4 --window-length 4 -t 2 -c 1427 --pub-addr tcp://*:52000 --recon-output-dir /mnt/output"
+    #command: ["tail", "-f", "/dev/null"]
+
+#--------------------------------------
+
+networks:
+  producer_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+
+  s2cs_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.101.0/24
+
+  consumer_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.102.0/24
