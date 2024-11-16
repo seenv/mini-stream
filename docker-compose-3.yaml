@@ -6,7 +6,7 @@ version: '3.8'
 
 services:
   producer:
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: producer
     privileged: true
     networks:
@@ -23,7 +23,7 @@ services:
     #  retries: 3
 
   p2cs:
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: p2cs
     privileged: true
     depends_on:
@@ -39,7 +39,7 @@ services:
     command: ["/prods.sh"]
 
   c2cs:
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: c2cs
     privileged: true
     depends_on:
@@ -55,7 +55,7 @@ services:
     command: ["/conss.sh"]
 
   consumer:
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: consumer
     privileged: true
     depends_on:
@@ -69,7 +69,7 @@ services:
     command: ["/cons.sh"]
 
   streamer:
-    image: seenv/ministream-mini:latest
+    image: seenv/ministream:latest
     depends_on:
       #producer:
       #  condition: service_healthy
@@ -82,7 +82,7 @@ services:
              wait"
 
   receiver:
-    image: seenv/ministream-mini:latest
+    image: seenv/ministream:latest
     depends_on:
       - streamer
     network_mode: "service:consumer"

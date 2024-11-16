@@ -1,13 +1,13 @@
 # One image for all of the mini-app's services 
-# the image size: mini.v.1 : 2.4GB
+# the image size: mini.v.1 : 6.47GB
 # image files are the same as aps-mini-app docker files
-# starting version 2
+# image starting version 2.0.0
 
 version: '3.8'
 
 services:
   producer:
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: producer
     privileged: true
     networks:
@@ -21,7 +21,7 @@ services:
 #--------------------------------------
 
   streamer:
-    image: seenv/ministream:mini.v.1
+    image: seenv/ministream:2.0.0
     depends_on:
       - producer
     network_mode: "service:producer" 
@@ -34,7 +34,7 @@ services:
 #--------------------------------------
 
   p2cs:
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: p2cs
     privileged: true
     depends_on:
@@ -51,7 +51,7 @@ services:
 
 
   c2cs:
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: c2cs
     privileged: true
     depends_on:
@@ -67,7 +67,7 @@ services:
     command: ["/conss.sh"]
 
   consumer:
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: consumer
     privileged: true
     depends_on:
@@ -83,7 +83,7 @@ services:
 #--------------------------------------
 
   receiver:
-    image: seenv/ministream:mini.v.1
+    image: seenv/ministream:2.0.0
     depends_on:
       - consumer
     network_mode: "service:consumer"

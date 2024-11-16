@@ -1,13 +1,13 @@
 # Each mini app service has one seperate image.
-# the image size: daq,dist : 2.4GB | sirt : 1.78GB
+# the image size: daq,dist : 6.47GB | sirt : 4.57GB
 # image files are the same as aps-mini-app docker files
-# starting version 1
+# image starting version 1.0.0
 
 version: '3.8'
 
 services:
   producer:
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: producer
     privileged: true
     networks:
@@ -21,7 +21,7 @@ services:
 #--------------------------------------
 
   streamer-daq:
-    image: seenv/ministream:daq-latest
+    image: seenv/ministream-daq:latest
     depends_on:
       - producer
     network_mode: "service:producer" 
@@ -32,7 +32,7 @@ services:
     #command: ["tail", "-f", "/dev/null"]
 
   streamer-dist:
-    image: seenv/ministream:dist-latest
+    image: seenv/ministream-dist:latest
     depends_on:
       - streamer-daq
     network_mode: "service:producer"
@@ -48,7 +48,7 @@ services:
     #build:
       #context: ./needs
       #dockerfile: Dockerfile.prods
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: p2cs
     privileged: true
     depends_on:
@@ -68,7 +68,7 @@ services:
     #build:
       #context: ./needs
       #dockerfile: Dockerfile.conss
-    image: seenv/scistream-docker:s2cs-latest
+    image: seenv/scistream-s2cs:latest
     container_name: c2cs
     privileged: true
     depends_on:
@@ -87,7 +87,7 @@ services:
     #build:
       #context: ./needs
       #dockerfile: Dockerfile.cons
-    image: seenv/scistream-docker:host-latest
+    image: seenv/scistream-host:latest
     container_name: consumer
     privileged: true
     depends_on:
@@ -103,7 +103,7 @@ services:
 #--------------------------------------
 
   streamer-sirt:
-    image: seenv/ministream:dist-latest
+    image: seenv/ministream-dist:latest
     depends_on:
       - consumer
     network_mode: "service:consumer"
