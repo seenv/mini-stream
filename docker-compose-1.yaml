@@ -1,5 +1,5 @@
 # Each mini app service has one seperate image.
-# the image size: daq,dist : 6.47GB | sirt : 4.57GB
+# the image size: daq,dist : 6.47GB | sirt : 4.57GB | s2cs : 918 | host : 728
 # image files are the same as aps-mini-app docker files
 # image starting version 1.0.0
 
@@ -103,7 +103,7 @@ services:
 #--------------------------------------
 
   streamer-sirt:
-    image: seenv/ministream-dist:latest
+    image: seenv/ministream-sirt:latest
     depends_on:
       - consumer
     network_mode: "service:consumer"

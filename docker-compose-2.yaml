@@ -1,5 +1,5 @@
 # One image for all of the mini-app's services 
-# the image size: mini.v.1 : 6.47GB
+# the image size: ministream : 6.47GB | sirt : 4.57GB | s2cs : 918 | host : 728
 # image files are the same as aps-mini-app docker files
 # image starting version 2.0.0
 
