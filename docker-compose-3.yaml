@@ -17,7 +17,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["/prod.sh"]
     #healthcheck:
-    #  test: ["CMD", "curl", "-f", "http://localhost:5000"] # Example healthcheck
+    #  test: ["CMD", "curl", "-f", "http://localhost:5000"]
     #  interval: 10s
     #  timeout: 5s
     #  retries: 3
